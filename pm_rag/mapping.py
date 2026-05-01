@@ -1,6 +1,6 @@
 """Event → symbol mapping strategies.
 
-Three strategies ship in v0.5:
+Four strategies are available:
 
 1. ``regex_mapping`` - case-insensitive substring match (the v0
    default, fast and cheap, high precision when log strings actually
@@ -10,9 +10,14 @@ Three strategies ship in v0.5:
    symbols by cosine similarity above a threshold. We never bundle a
    model - the caller decides which embedder to plug in (sentence-
    transformers, BAAI/bge-*, OpenAI's API, anything).
-3. ``compose_mappings`` - try each strategy in order, take the first
-   non-empty result per event. Lets you stack regex (cheap, precise)
-   then embedding (broader recall) then a manual override.
+3. ``llm_mapping`` - user supplies an LLM callable ``llm_fn(prompt) ->
+   str``. The LLM is asked which symbols emit each event and responds
+   with a JSON index list.
+4. ``manual_mapping`` - explicit symbol-name overrides loaded from a
+   dict (or YAML). Use as the last-resort layer in a
+   ``compose_mappings`` chain when all automated strategies miss.
+5. ``compose_mappings`` - combine strategies in priority order, taking
+   the first non-empty result per event.
 """
 from __future__ import annotations
 
@@ -261,3 +266,44 @@ def _parse_indices(raw: str, n_symbols: int, top_k: int) -> list[int]:
         if len(out) >= top_k:
             break
     return out
+
+
+# ---------------------------------------------------------------------
+# Manual / YAML override mapping
+# ---------------------------------------------------------------------
+
+
+def manual_mapping(
+    overrides: dict[str, list[str]],
+) -> Callable[[Iterable[str], list[str]], dict[str, list[int]]]:
+    """Return a mapping strategy backed by an explicit symbol-name table.
+
+    Use as the last layer in a ``compose_mappings`` chain when all
+    automated strategies miss an event. The caller provides a dict
+    mapping event names to symbol names; the returned strategy resolves
+    those names to indices at query time.
+
+    Symbol names absent from the current symbol list are silently
+    ignored, so stale YAML override files remain safe after symbols are
+    renamed or removed.
+
+    Args:
+        overrides: event name to list of symbol names that emit it.
+
+    Returns:
+        A strategy callable with the standard ``(events, symbols)``
+        signature, composable directly under ``compose_mappings``.
+    """
+
+    def _manual(events: Iterable[str], symbols: list[str]) -> dict[str, list[int]]:
+        index_of = {s: i for i, s in enumerate(symbols)}
+        seen: set[str] = set()
+        out: dict[str, list[int]] = {}
+        for ev in events:
+            if ev in seen:
+                continue
+            seen.add(ev)
+            out[ev] = [index_of[name] for name in overrides.get(ev, []) if name in index_of]
+        return out
+
+    return _manual
