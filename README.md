@@ -17,16 +17,13 @@ Couples a code graph (AST · calls · types · imports) with an event log,
 runs personalized PageRank seeded by the current trace prefix, and
 returns the symbols / files / regions most likely to fire next.
 
-> **The thesis.** Embedding-based RAG retrieves what's *similar*. Most
-> of the time you don't want similar - you want what's *next*, given
-> where the system is. Process-mining traces tell you where the system
-> is. Code graphs tell you what could happen. Diffusing the trace state
-> through the code graph tells you what's about to happen, and where
-> to look for it.
+## Why
+
+Embedding-based RAG retrieves what's textually similar to the query string. For code search at runtime that's often the wrong question. The interesting question is what code is *about to fire*, given where the running system is. Process-mining traces describe the current state of execution. Code graphs describe what could happen. Diffusing trace state through a code graph picks out the symbols most likely to be touched next, and that's what an agent or a debugger usually wants.
 
 ---
 
-## ✦ The problem with embedding RAG for code
+## ✦ Worked failure mode
 
 You're at step 14 of an order-fulfillment workflow. The event is
 `payment_settled`. Embedding RAG, queried with "payment_settled", will
@@ -99,12 +96,12 @@ Embedding RAG with the same query "payment_settled" returns:
 Different rankings, different intent. `pm-rag` ranks by what fires next,
 not what's textually related.
 
-## ✦ Why this is hard
+## ✦ The hard part: event-to-symbol mapping
 
-The hard part isn't the diffusion - it's the event-to-symbol mapping.
-Most codebases don't emit structured events; you have to *infer* the
-mapping from logger calls, span names, function names, and string
-constants.
+The diffusion is well-studied; the bottleneck is figuring out which
+function in the codebase emits a given event. Most codebases don't emit
+structured events at all, so the mapping has to be inferred from logger
+calls, span names, function names, and string constants.
 
 `pm-rag` ships several mapping strategies, composable:
 
