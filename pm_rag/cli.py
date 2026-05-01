@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import sys
 
 import click
 
@@ -37,6 +38,30 @@ def cmd_mapping() -> None:
         for ev, nodes in idx.mapping.items()
     }
     click.echo(json.dumps(payload, indent=2))
+
+
+@main.command(name="eval")
+@click.option(
+    "--trace-file",
+    required=True,
+    type=click.Path(exists=True),
+    help='JSONL file; each line: {"prefix": [...], "truth": "event"}.',
+)
+@click.option("--k", default=1, show_default=True, type=int, help="Top-k cutoff.")
+def cmd_eval(trace_file: str, k: int) -> None:
+    """Evaluate retrieval accuracy against ground-truth next events.
+
+    NOTE: not yet implemented — see TODO.md for the v0.4 plan.
+    """
+    # TODO: load trace_file lines into (prefixes, truth) lists
+    # TODO: build_index(demo_graph(), demo_events()) or load a custom index
+    # TODO: from pm_rag.eval import evaluate; metrics = evaluate(idx, prefixes, truth, k=k)
+    # TODO: click.echo(json.dumps(metrics, indent=2))
+    click.echo(
+        json.dumps({"error": "eval subcommand not yet implemented — see TODO.md"}),
+        err=True,
+    )
+    sys.exit(1)
 
 
 if __name__ == "__main__":
