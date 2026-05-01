@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pm-rag"
-version = "0.1.0"
-description = "Process-aware retrieval - code-graph diffusion conditioned on event traces"
+version = "0.6.0"
+description = "Process-aware retrieval: code-graph diffusion conditioned on event traces"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
