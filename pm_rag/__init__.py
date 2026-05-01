@@ -1,0 +1,19 @@
+"""pm-rag — process-aware retrieval over code graphs."""
+from __future__ import annotations
+
+__version__ = "0.1.0"
+
+from pm_rag.diffusion import personalized_pagerank
+from pm_rag.graph import CodeGraph
+from pm_rag.index import Hit, Index, build_index, query
+from pm_rag.mapping import regex_mapping
+
+__all__ = [
+    "CodeGraph",
+    "Hit",
+    "Index",
+    "build_index",
+    "personalized_pagerank",
+    "query",
+    "regex_mapping",
+]
