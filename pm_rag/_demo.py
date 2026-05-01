@@ -45,3 +45,54 @@ def demo_graph() -> CodeGraph:
 
 def demo_events() -> list[str]:
     return list(_EVENTS)
+
+
+# Synthetic traces over the demo graph. Mix of happy-path, refund,
+# fraud-review, and the "with delivery_confirmed" variant.
+_HAPPY = [
+    "order_received",
+    "payment_pending",
+    "payment_settled",
+    "allocate_inventory",
+    "ship_order",
+]
+_HAPPY_DELIVERED = [*_HAPPY, "delivery_confirmed"]
+_REFUNDED = [
+    "order_received",
+    "payment_pending",
+    "payment_settled",
+    "refund_initiated",
+]
+_FRAUD_HAPPY = [
+    "order_received",
+    "payment_pending",
+    "fraud_review",
+    "payment_settled",
+    "allocate_inventory",
+    "ship_order",
+]
+_FRAUD_REFUNDED = [
+    "order_received",
+    "payment_pending",
+    "fraud_review",
+    "payment_settled",
+    "refund_initiated",
+]
+
+_TRACES: list[list[str]] = [
+    _HAPPY,
+    _HAPPY_DELIVERED,
+    _REFUNDED,
+    _FRAUD_HAPPY,
+    _HAPPY_DELIVERED,
+    _HAPPY,
+    _FRAUD_REFUNDED,
+    _HAPPY_DELIVERED,
+    _HAPPY,
+    _REFUNDED,
+]
+
+
+def demo_traces() -> list[list[str]]:
+    """Return the demo synthetic traces (list of activity-name lists)."""
+    return [list(t) for t in _TRACES]

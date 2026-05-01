@@ -176,6 +176,22 @@ next-event localization task:
 Baseline: BM25 over function names. Embedding RAG comes next.
 `pm-rag`'s job is to beat both.
 
+The eval harness ships in v0.4. Run it on the bundled demo:
+
+```bash
+$ pm-rag eval
+{
+  "task": "next-event-localization",
+  "n": 42,
+  "alpha": 0.15,
+  "top_k": {"1": 0.3095, "3": 0.7143, "5": 0.9524, "10": 1.0}
+}
+```
+
+Wire it to a real repo + log via the `evaluate(index, cases)` API in
+`pm_rag.eval`; `extract_cases(traces)` builds `(prefix, next_event)`
+pairs from any iterable of traces.
+
 ## ✦ Status
 
 This is research-preview. The diffusion math works on toy examples;
@@ -215,11 +231,12 @@ top-k symbols`.
 ## ✦ Roadmap
 
 - [x] v0.0 — scaffold, design, math
-- [ ] v0.1 — event→symbol mapping via regex + embedding
-- [ ] v0.2 — joint graph builder (codegraph + event log → unified graph)
-- [ ] v0.3 — personalized PageRank diffusion
-- [ ] v0.4 — eval harness against pm-bench's next-event task
-- [ ] v0.5 — LLM-assisted mapping refinement
+- [x] v0.1 — regex event→symbol mapping
+- [x] v0.2 — joint graph builder (CodeGraph + event vocabulary → P^T)
+- [x] v0.3 — personalized PageRank diffusion + ranked query
+- [x] v0.4 — eval harness (`evaluate`, `extract_cases`, `pm-rag eval` CLI)
+- [ ] v0.5 — embedding-based event→symbol mapping
+- [ ] v0.6 — LLM-assisted mapping refinement
 - [ ] v0.7 — GNN-augmented retrieval (research)
 - [ ] v1.0 — beats embedding-RAG by ≥10pp on the next-event localization task
 

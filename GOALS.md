@@ -5,9 +5,13 @@ Show that retrieval conditioned on process state beats embedding
 similarity on tasks where "what's next" matters more than "what's similar".
 
 ## v0 success criteria
-- Joint graph builder runs end-to-end on a 50k LOC repo + 100k event log
-- Event→symbol mapping handles regex + embedding strategies
-- PPR diffusion produces stable rankings (deterministic seed)
+- Joint graph builder runs end-to-end on the bundled demo ✅ (50k LOC
+  repo target deferred to v1 — needs codegraph integration)
+- Event→symbol mapping handles regex ✅; embedding strategy pending v0.5
+- PPR diffusion produces stable rankings (deterministic seed) ✅
+- Eval harness with reproducible top-k accuracy on a fixed task ✅
+  (`pm-rag eval` reports 31% / 71% / 95% / 100% top-1/3/5/10 against
+  the demo)
 
 ## v1 success criteria
 - Beats baseline embedding RAG by ≥10pp on the next-event localization
