@@ -2,15 +2,15 @@
 
 Three strategies ship in v0.5:
 
-1. ``regex_mapping`` — case-insensitive substring match (the v0
+1. ``regex_mapping`` - case-insensitive substring match (the v0
    default, fast and cheap, high precision when log strings actually
    embed function names).
-2. ``embedding_mapping`` — user supplies an embedder callable
+2. ``embedding_mapping`` - user supplies an embedder callable
    ``embed_fn(text) -> Sequence[float]``. The mapping picks the top-k
    symbols by cosine similarity above a threshold. We never bundle a
-   model — the caller decides which embedder to plug in (sentence-
+   model - the caller decides which embedder to plug in (sentence-
    transformers, BAAI/bge-*, OpenAI's API, anything).
-3. ``compose_mappings`` — try each strategy in order, take the first
+3. ``compose_mappings`` - try each strategy in order, take the first
    non-empty result per event. Lets you stack regex (cheap, precise)
    then embedding (broader recall) then a manual override.
 """
@@ -145,7 +145,7 @@ LlmFn = Callable[[str], str]
 """A pluggable LLM. Takes a prompt, returns the raw text response.
 
 Caller wraps whatever model they want (Anthropic, OpenAI, local llama,
-a fake for tests) into this shape. The function does not stream — it
+a fake for tests) into this shape. The function does not stream - it
 returns the full response as a string.
 """
 
@@ -181,7 +181,7 @@ def llm_mapping(
     event and the numbered symbol list, it must respond with a JSON
     array of integers (the symbol indices that plausibly emit that
     event). We tolerate non-JSON or malformed responses by returning
-    an empty list for that event — never raising.
+    an empty list for that event - never raising.
 
     Composes with `regex_mapping` and `embedding_mapping` via
     `compose_mappings`. Use that to stack cheap-and-precise →

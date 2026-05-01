@@ -13,7 +13,7 @@ from pm_rag.index import build_index, query
 @click.group()
 @click.version_option()
 def main() -> None:
-    """pm-rag — process-aware retrieval."""
+    """pm-rag - process-aware retrieval."""
 
 
 @main.command(name="query")

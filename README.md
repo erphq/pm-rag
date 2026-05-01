@@ -18,7 +18,7 @@ runs personalized PageRank seeded by the current trace prefix, and
 returns the symbols / files / regions most likely to fire next.
 
 > **The thesis.** Embedding-based RAG retrieves what's *similar*. Most
-> of the time you don't want similar — you want what's *next*, given
+> of the time you don't want similar - you want what's *next*, given
 > where the system is. Process-mining traces tell you where the system
 > is. Code graphs tell you what could happen. Diffusing the trace state
 > through the code graph tells you what's about to happen, and where
@@ -32,11 +32,11 @@ You're at step 14 of an order-fulfillment workflow. The event is
 `payment_settled`. Embedding RAG, queried with "payment_settled", will
 return:
 
-- The function `pay_payment_settled_handler` — good.
-- The Stripe `PaymentSettled` webhook documentation — useful.
-- A blog post titled "5 things to do when payment is settled" — noise.
-- A test file mocking `payment_settled` — semi-useful.
-- A docstring discussing payment settlement — also noise.
+- The function `pay_payment_settled_handler` - good.
+- The Stripe `PaymentSettled` webhook documentation - useful.
+- A blog post titled "5 things to do when payment is settled" - noise.
+- A test file mocking `payment_settled` - semi-useful.
+- A docstring discussing payment settlement - also noise.
 
 What you actually wanted to know: *what code is about to fire?*
 Probably one of `generate_invoice`, `allocate_inventory`, `fraud_review`,
@@ -101,7 +101,7 @@ not what's textually related.
 
 ## ✦ Why this is hard
 
-The hard part isn't the diffusion — it's the event-to-symbol mapping.
+The hard part isn't the diffusion - it's the event-to-symbol mapping.
 Most codebases don't emit structured events; you have to *infer* the
 mapping from logger calls, span names, function names, and string
 constants.
@@ -138,7 +138,7 @@ r = α s + (1 - α) P^T r
 where `P` is the row-normalized transition matrix of `G`. Iterate to
 convergence. Rank by `r`. Done.
 
-The restart bias is what makes this *personalized* — without it, you
+The restart bias is what makes this *personalized* - without it, you
 get global PageRank, which doesn't depend on the trace.
 
 ## ✦ Comparison
@@ -205,11 +205,11 @@ A: v0 is Python and TypeScript via `codegraph`. Other languages need a
 graph extractor; the diffusion is language-agnostic.
 
 **Q: Can I bring my own code graph?**
-A: Yes — pass anything that exposes `(nodes, edges, weights)`. The
+A: Yes - pass anything that exposes `(nodes, edges, weights)`. The
 `codegraph` integration is optional.
 
 **Q: Can I bring my own event log format?**
-A: Yes — adapter for XES, CSV, custom JSON. Same as `pm-bench`.
+A: Yes - adapter for XES, CSV, custom JSON. Same as `pm-bench`.
 
 **Q: Why graph diffusion and not GNN-based retrieval?**
 A: Diffusion is parameter-free, deterministic, and trivial to debug.
@@ -225,20 +225,20 @@ top-k symbols`.
 
 - General-purpose RAG framework
 - Inventing new graph algorithms (use known ones, apply them well)
-- LLM-from-scratch mapping — we layer on top, not replace
+- LLM-from-scratch mapping - we layer on top, not replace
 - Real-time indexing (batch only for v0)
 
 ## ✦ Roadmap
 
-- [x] v0.0 — scaffold, design, math
-- [x] v0.1 — regex event→symbol mapping
-- [x] v0.2 — joint graph builder (CodeGraph + event vocabulary → P^T)
-- [x] v0.3 — personalized PageRank diffusion + ranked query
-- [x] v0.4 — eval harness (`evaluate`, `extract_cases`, `pm-rag eval` CLI)
-- [x] v0.5 — embedding-based event→symbol mapping (user-supplied embedder via `EmbedFn`) + `compose_mappings` for stacked strategies
-- [x] v0.6 — LLM-assisted mapping (user-supplied `LlmFn`); composes under `compose_mappings` as a long-tail fallback
-- [ ] v0.7 — GNN-augmented retrieval (research)
-- [ ] v1.0 — beats embedding-RAG by ≥10pp on the next-event localization task
+- [x] v0.0 - scaffold, design, math
+- [x] v0.1 - regex event→symbol mapping
+- [x] v0.2 - joint graph builder (CodeGraph + event vocabulary → P^T)
+- [x] v0.3 - personalized PageRank diffusion + ranked query
+- [x] v0.4 - eval harness (`evaluate`, `extract_cases`, `pm-rag eval` CLI)
+- [x] v0.5 - embedding-based event→symbol mapping (user-supplied embedder via `EmbedFn`) + `compose_mappings` for stacked strategies
+- [x] v0.6 - LLM-assisted mapping (user-supplied `LlmFn`); composes under `compose_mappings` as a long-tail fallback
+- [ ] v0.7 - GNN-augmented retrieval (research)
+- [ ] v1.0 - beats embedding-RAG by ≥10pp on the next-event localization task
 
 ## ✦ Topics
 
@@ -248,4 +248,4 @@ top-k symbols`.
 
 ## ✦ License
 
-MIT — see [LICENSE](./LICENSE).
+MIT - see [LICENSE](./LICENSE).

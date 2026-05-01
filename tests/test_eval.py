@@ -49,7 +49,7 @@ def test_evaluate_skips_unmappable_truth() -> None:
 def test_evaluate_finds_downstream_in_top3() -> None:
     """PPR seeded at payment_settled should rank the payment-fulfillment
     chain (ship_order / delivery_confirmed / allocate_inventory) high
-    enough that ship_order — a strong downstream attractor — appears
+    enough that ship_order - a strong downstream attractor - appears
     in the top 3."""
     idx = build_index(demo_graph(), demo_events())
     cases = [
@@ -80,6 +80,6 @@ def test_demo_traces_round_trip_through_eval() -> None:
     idx = build_index(demo_graph(), demo_events())
     cases = extract_cases(demo_traces())
     score = evaluate(idx, cases)
-    # Demo is constructed so PPR should localize *something* —
+    # Demo is constructed so PPR should localize *something* -
     # top-10 over a 10-node graph should include the truth often.
     assert score.top_k[10] > 0.5

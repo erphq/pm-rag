@@ -1,7 +1,7 @@
 """Personalized PageRank.
 
 Solves `r = alpha * s + (1 - alpha) * P^T r` by power iteration. `alpha`
-is the restart probability — higher values bias more toward the seed.
+is the restart probability - higher values bias more toward the seed.
 """
 from __future__ import annotations
 

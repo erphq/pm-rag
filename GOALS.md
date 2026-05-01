@@ -6,7 +6,7 @@ similarity on tasks where "what's next" matters more than "what's similar".
 
 ## v0 success criteria
 - Joint graph builder runs end-to-end on the bundled demo ✅ (50k LOC
-  repo target deferred to v1 — needs codegraph integration)
+  repo target deferred to v1 - needs codegraph integration)
 - Event→symbol mapping handles regex ✅; embedding strategy pending v0.5
 - PPR diffusion produces stable rankings (deterministic seed) ✅
 - Eval harness with reproducible top-k accuracy on a fixed task ✅

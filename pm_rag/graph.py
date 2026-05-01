@@ -1,4 +1,4 @@
-"""Code graph — nodes (symbols), directed weighted edges (calls/imports/types)."""
+"""Code graph - nodes (symbols), directed weighted edges (calls/imports/types)."""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -12,7 +12,7 @@ class CodeGraph:
 
     `edges` is a list of `(src_idx, dst_idx, weight)` tuples. Self-loops
     are allowed. The class makes no assumption about what the symbols
-    represent — functions, files, classes, anything indexable.
+    represent - functions, files, classes, anything indexable.
     """
 
     nodes: list[str]
