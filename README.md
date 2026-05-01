@@ -235,7 +235,7 @@ top-k symbols`.
 - [x] v0.2 — joint graph builder (CodeGraph + event vocabulary → P^T)
 - [x] v0.3 — personalized PageRank diffusion + ranked query
 - [x] v0.4 — eval harness (`evaluate`, `extract_cases`, `pm-rag eval` CLI)
-- [ ] v0.5 — embedding-based event→symbol mapping
+- [x] v0.5 — embedding-based event→symbol mapping (user-supplied embedder via `EmbedFn`) + `compose_mappings` for stacked strategies
 - [ ] v0.6 — LLM-assisted mapping refinement
 - [ ] v0.7 — GNN-augmented retrieval (research)
 - [ ] v1.0 — beats embedding-RAG by ≥10pp on the next-event localization task

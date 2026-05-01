@@ -12,15 +12,23 @@ from pm_rag.eval import (
 )
 from pm_rag.graph import CodeGraph
 from pm_rag.index import Hit, Index, build_index, query
-from pm_rag.mapping import regex_mapping
+from pm_rag.mapping import (
+    EmbedFn,
+    compose_mappings,
+    embedding_mapping,
+    regex_mapping,
+)
 
 __all__ = [
     "CodeGraph",
+    "EmbedFn",
     "Hit",
     "Index",
     "LocalizationCase",
     "LocalizationScore",
     "build_index",
+    "compose_mappings",
+    "embedding_mapping",
     "evaluate",
     "extract_cases",
     "personalized_pagerank",
