@@ -133,3 +133,131 @@ def _norm(v: Sequence[float]) -> list[float]:
 
 def _dot(a: Sequence[float], b: Sequence[float]) -> float:
     return sum(x * y for x, y in zip(a, b, strict=True))
+
+
+# ---------------------------------------------------------------------
+# v0.6: LLM-assisted mapping
+# ---------------------------------------------------------------------
+
+import json as _json  # noqa: E402
+
+LlmFn = Callable[[str], str]
+"""A pluggable LLM. Takes a prompt, returns the raw text response.
+
+Caller wraps whatever model they want (Anthropic, OpenAI, local llama,
+a fake for tests) into this shape. The function does not stream — it
+returns the full response as a string.
+"""
+
+
+_PROMPT_TEMPLATE = """\
+You are mapping a process-mining event to functions in a codebase.
+
+Event name: {event}
+
+Functions (numbered 0..{last_idx}):
+{symbol_block}
+
+Return at most {top_k} indices of functions that most plausibly emit
+this event when they run. Rank best-first. If no function plausibly
+emits this event, return an empty list.
+
+Respond with a JSON array of integers and nothing else. Examples:
+[3, 1, 7]
+[]
+"""
+
+
+def llm_mapping(
+    events: Iterable[str],
+    symbols: list[str],
+    llm_fn: LlmFn,
+    *,
+    top_k: int = 5,
+) -> dict[str, list[int]]:
+    """Ask an LLM which symbols emit each event.
+
+    The LLM is treated as a black box: given a prompt that lists the
+    event and the numbered symbol list, it must respond with a JSON
+    array of integers (the symbol indices that plausibly emit that
+    event). We tolerate non-JSON or malformed responses by returning
+    an empty list for that event — never raising.
+
+    Composes with `regex_mapping` and `embedding_mapping` via
+    `compose_mappings`. Use that to stack cheap-and-precise →
+    broader-but-fuzzier → LLM-as-fallback.
+
+    Args:
+        events: an iterable of event names (duplicates ignored).
+        symbols: the symbol list.
+        llm_fn: callable ``prompt -> raw response``.
+        top_k: maximum symbols returned per event (default 5).
+
+    Returns:
+        A dict from event name to a list of symbol indices.
+    """
+    if top_k <= 0:
+        raise ValueError("top_k must be positive")
+
+    out: dict[str, list[int]] = {}
+    seen: set[str] = set()
+    for ev in events:
+        if ev in seen:
+            continue
+        seen.add(ev)
+        prompt = _build_llm_prompt(ev, symbols, top_k)
+        raw = llm_fn(prompt)
+        out[ev] = _parse_indices(raw, len(symbols), top_k)
+    return out
+
+
+def _build_llm_prompt(event: str, symbols: list[str], top_k: int) -> str:
+    if not symbols:
+        symbol_block = "(none)"
+        last_idx = -1
+    else:
+        symbol_block = "\n".join(f"  {i}: {s}" for i, s in enumerate(symbols))
+        last_idx = len(symbols) - 1
+    return _PROMPT_TEMPLATE.format(
+        event=event, last_idx=last_idx, symbol_block=symbol_block, top_k=top_k
+    )
+
+
+def _parse_indices(raw: str, n_symbols: int, top_k: int) -> list[int]:
+    """Tolerantly parse the LLM's response into a list of valid indices.
+
+    Returns an empty list when the response can't be parsed, isn't an
+    array, contains non-int values, or is otherwise unusable. Never
+    raises.
+    """
+    if not isinstance(raw, str):
+        return []
+    text = raw.strip()
+    if not text:
+        return []
+    # Find the first '[ ... ]' substring to tolerate stray prose.
+    start = text.find("[")
+    end = text.rfind("]")
+    if start == -1 or end == -1 or end <= start:
+        return []
+    candidate = text[start : end + 1]
+    try:
+        parsed = _json.loads(candidate)
+    except (ValueError, TypeError):
+        return []
+    if not isinstance(parsed, list):
+        return []
+    out: list[int] = []
+    seen: set[int] = set()
+    for item in parsed:
+        if not isinstance(item, int) or isinstance(item, bool):
+            continue
+        if item < 0 or item >= n_symbols:
+            continue
+        if item in seen:
+            continue
+        seen.add(item)
+        out.append(item)
+        if len(out) >= top_k:
+            break
+    return out

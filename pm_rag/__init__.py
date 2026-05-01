@@ -14,8 +14,10 @@ from pm_rag.graph import CodeGraph
 from pm_rag.index import Hit, Index, build_index, query
 from pm_rag.mapping import (
     EmbedFn,
+    LlmFn,
     compose_mappings,
     embedding_mapping,
+    llm_mapping,
     regex_mapping,
 )
 
@@ -24,6 +26,7 @@ __all__ = [
     "EmbedFn",
     "Hit",
     "Index",
+    "LlmFn",
     "LocalizationCase",
     "LocalizationScore",
     "build_index",
@@ -31,6 +34,7 @@ __all__ = [
     "embedding_mapping",
     "evaluate",
     "extract_cases",
+    "llm_mapping",
     "personalized_pagerank",
     "query",
     "regex_mapping",
