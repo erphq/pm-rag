@@ -83,3 +83,17 @@ def test_demo_traces_round_trip_through_eval() -> None:
     # Demo is constructed so PPR should localize *something* -
     # top-10 over a 10-node graph should include the truth often.
     assert score.top_k[10] > 0.5
+
+
+def test_extract_cases_repeated_events_in_trace() -> None:
+    cases = extract_cases([["a", "a", "a"]])
+    assert len(cases) == 2
+    assert cases[0] == LocalizationCase(prefix=["a"], next_event="a")
+    assert cases[1] == LocalizationCase(prefix=["a", "a"], next_event="a")
+
+
+def test_evaluate_ks_deduplication() -> None:
+    idx = build_index(demo_graph(), demo_events())
+    cases = extract_cases(demo_traces())
+    score = evaluate(idx, cases, ks=[1, 1, 3])
+    assert set(score.top_k.keys()) == {1, 3}
