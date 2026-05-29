@@ -6,7 +6,7 @@
 
 **Given a trace step, return the code that runs.**
 
-![tests](https://img.shields.io/badge/tests-77%20passing-yellowgreen)
+![tests](https://img.shields.io/badge/tests-104%20passing-yellowgreen)
 
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![status](https://img.shields.io/badge/status-research--preview-red.svg)](#roadmap)
