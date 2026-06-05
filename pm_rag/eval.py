@@ -8,7 +8,7 @@ top-k retrieved symbols."
 from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from pm_rag.index import Index, query
 
@@ -23,16 +23,22 @@ class LocalizationCase:
 
 @dataclass(frozen=True)
 class LocalizationScore:
-    """Top-k accuracy across a set of cases.
+    """Top-k accuracy and MRR across a set of cases.
 
     `top_k` maps each `k` to the fraction of cases where any truth
-    symbol appears in the top-`k` retrieved. `n` is the count of cases
-    that had at least one mapped truth symbol (cases with no mapping
-    are unscorable and skipped).
+    symbol appears in the top-`k` retrieved. `mrr` is the mean
+    reciprocal rank: for each scorable case the reciprocal of the
+    1-based rank of the first truth hit is accumulated, then averaged.
+    MRR is computed over the same top-max(ks) window as top-k accuracy.
+    `n` is the count of cases that had at least one mapped truth symbol
+    (cases with no mapping are unscorable and skipped).
+
+    Invariant: top_k[min(ks)] <= mrr <= top_k[max(ks)].
     """
 
     top_k: dict[int, float]
     n: int
+    mrr: float = field(default=0.0)
 
 
 def extract_cases(traces: Iterable[Sequence[str]]) -> list[LocalizationCase]:
@@ -65,6 +71,9 @@ def evaluate(
     any of the truth symbols (the symbols that map to `next_event`)
     appears in the top-k retrieved. Cases whose `next_event` has no
     mapping are skipped (we can't score them).
+
+    MRR is computed as the mean of ``1 / rank`` of the first truth hit
+    across all scorable cases, over the same top-max(ks) window.
     """
     if not ks:
         raise ValueError("ks must be non-empty")
@@ -76,6 +85,7 @@ def evaluate(
 
     name_to_idx = {n: i for i, n in enumerate(index.graph.nodes)}
     hits = {k: 0 for k in sorted_ks}
+    rr_sum = 0.0
     n = 0
     for c in cases:
         truth_indices = index.mapping.get(c.next_event, [])
@@ -88,6 +98,14 @@ def evaluate(
         for k in sorted_ks:
             if any(idx in truth_set for idx in ranked_indices[:k]):
                 hits[k] += 1
+        for rank, idx in enumerate(ranked_indices, start=1):
+            if idx in truth_set:
+                rr_sum += 1.0 / rank
+                break
     if n == 0:
-        return LocalizationScore(top_k={k: 0.0 for k in sorted_ks}, n=0)
-    return LocalizationScore(top_k={k: hits[k] / n for k in sorted_ks}, n=n)
+        return LocalizationScore(top_k={k: 0.0 for k in sorted_ks}, n=0, mrr=0.0)
+    return LocalizationScore(
+        top_k={k: hits[k] / n for k in sorted_ks},
+        n=n,
+        mrr=rr_sum / n,
+    )
