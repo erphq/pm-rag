@@ -18,6 +18,8 @@ Four strategies are available:
    ``compose_mappings`` chain when all automated strategies miss.
 5. ``compose_mappings`` - combine strategies in priority order, taking
    the first non-empty result per event.
+6. ``merge_mappings`` - combine strategies by union, collecting all
+   matching indices from every strategy (maximum recall).
 """
 from __future__ import annotations
 
@@ -109,8 +111,8 @@ def compose_mappings(
     """Combine multiple mapping strategies. The composed mapping picks
     the FIRST non-empty result per event across `strategies`.
 
-    Useful for stacking: cheap-and-precise (regex) → broader-but-
-    fuzzier (embedding) → manual override.
+    Useful for stacking: cheap-and-precise (regex) -> broader-but-
+    fuzzier (embedding) -> manual override.
 
     Each strategy must accept ``(events, symbols)`` and return the
     mapping dict.
@@ -189,8 +191,8 @@ def llm_mapping(
     an empty list for that event - never raising.
 
     Composes with `regex_mapping` and `embedding_mapping` via
-    `compose_mappings`. Use that to stack cheap-and-precise →
-    broader-but-fuzzier → LLM-as-fallback.
+    `compose_mappings`. Use that to stack cheap-and-precise ->
+    broader-but-fuzzier -> LLM-as-fallback.
 
     Args:
         events: an iterable of event names (duplicates ignored).
@@ -307,3 +309,42 @@ def manual_mapping(
         return out
 
     return _manual
+
+
+# ---------------------------------------------------------------------
+# merge_mappings: union-based strategy combiner
+# ---------------------------------------------------------------------
+
+
+def merge_mappings(
+    *strategies: Callable[[Iterable[str], list[str]], dict[str, list[int]]],
+) -> Callable[[Iterable[str], list[str]], dict[str, list[int]]]:
+    """Combine multiple mapping strategies by union.
+
+    Unlike ``compose_mappings``, which takes the FIRST non-empty result
+    per event, ``merge_mappings`` pools symbol indices from ALL strategies
+    and returns their ordered union (insertion-order, deduplicated).
+
+    Use when you want maximum recall: even if regex already matched some
+    symbols, embedding may surface additional ones the regex missed, and
+    you want both. Contrast with ``compose_mappings``, which stops at
+    the first strategy that returns a non-empty result.
+
+    Each strategy must accept ``(events, symbols)`` and return the
+    standard mapping dict.
+    """
+
+    def merged(events: Iterable[str], symbols: list[str]) -> dict[str, list[int]]:
+        events_list = list(dict.fromkeys(events))
+        result: dict[str, list[int]] = {ev: [] for ev in events_list}
+        seen_per_ev: dict[str, set[int]] = {ev: set() for ev in events_list}
+        for strategy in strategies:
+            partial = strategy(events_list, symbols)
+            for ev in events_list:
+                for idx in partial.get(ev, []):
+                    if idx not in seen_per_ev[ev]:
+                        result[ev].append(idx)
+                        seen_per_ev[ev].add(idx)
+        return result
+
+    return merged
