@@ -72,6 +72,7 @@ def cmd_eval(alpha: float, ks: str) -> None:
                 "n": score.n,
                 "alpha": alpha,
                 "top_k": {str(k): round(v, 4) for k, v in score.top_k.items()},
+                "mrr": round(score.mrr, 4),
             },
             indent=2,
         ),

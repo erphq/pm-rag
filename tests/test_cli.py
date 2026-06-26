@@ -186,3 +186,24 @@ class TestEvalCommand:
         assert result.exit_code == 0
         payload = json.loads(result.output)
         assert set(payload["top_k"].keys()) == {"1", "3", "5"}
+
+    def test_eval_includes_mrr_in_payload(self, runner: CliRunner) -> None:
+        # MRR is computed by evaluate() but was previously missing from
+        # the CLI output. Pin the shape so it stays visible.
+        result = runner.invoke(main, ["eval"])
+        assert result.exit_code == 0
+        payload = json.loads(result.output)
+        assert "mrr" in payload
+        assert isinstance(payload["mrr"], float)
+        assert 0.0 <= payload["mrr"] <= 1.0
+
+    def test_eval_mrr_bounded_by_top_k_accuracy(self, runner: CliRunner) -> None:
+        # Invariant: top_k[1] <= mrr <= top_k[max_k]. The CLI rounds
+        # to 4 decimal places, so allow a small tolerance.
+        result = runner.invoke(main, ["eval"])
+        assert result.exit_code == 0
+        payload = json.loads(result.output)
+        top_k = payload["top_k"]
+        mrr = payload["mrr"]
+        assert top_k["1"] <= mrr + 1e-4
+        assert mrr <= top_k["10"] + 1e-4
