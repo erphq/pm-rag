@@ -109,3 +109,24 @@ def evaluate(
         n=n,
         mrr=rr_sum / n,
     )
+
+
+def format_score(
+    score: LocalizationScore,
+    *,
+    alpha: float | None = None,
+    decimals: int = 4,
+) -> dict:
+    """Return a JSON-serialisable dict from a LocalizationScore.
+
+    The returned structure mirrors the ``pm-rag eval`` CLI output so
+    callers can serialise with ``json.dumps`` without further processing.
+    ``alpha`` is included only when provided (the caller knows the PPR
+    parameter; the score object does not store it).
+    """
+    out: dict = {"task": "next-event-localization", "n": score.n}
+    if alpha is not None:
+        out["alpha"] = alpha
+    out["top_k"] = {str(k): round(v, decimals) for k, v in score.top_k.items()}
+    out["mrr"] = round(score.mrr, decimals)
+    return out
