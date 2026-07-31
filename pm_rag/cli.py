@@ -6,7 +6,7 @@ import json
 import click
 
 from pm_rag._demo import demo_events, demo_graph, demo_traces
-from pm_rag.eval import evaluate, extract_cases
+from pm_rag.eval import evaluate, extract_cases, format_score
 from pm_rag.index import build_index, query
 
 
@@ -65,18 +65,7 @@ def cmd_eval(alpha: float, ks: str) -> None:
     idx = build_index(demo_graph(), demo_events())
     cases = extract_cases(demo_traces())
     score = evaluate(idx, cases, ks=parsed_ks, alpha=alpha)
-    click.echo(
-        json.dumps(
-            {
-                "task": "next-event-localization",
-                "n": score.n,
-                "alpha": alpha,
-                "top_k": {str(k): round(v, 4) for k, v in score.top_k.items()},
-                "mrr": round(score.mrr, 4),
-            },
-            indent=2,
-        ),
-    )
+    click.echo(json.dumps(format_score(score, alpha=alpha), indent=2))
 
 
 if __name__ == "__main__":
