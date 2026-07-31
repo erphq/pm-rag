@@ -3,8 +3,6 @@ from __future__ import annotations
 
 import json
 
-import pytest
-
 from pm_rag.eval import LocalizationScore, format_score
 
 
