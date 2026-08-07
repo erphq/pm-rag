@@ -108,6 +108,9 @@ def query(
         raise ValueError("trace_decay must be in (0, 1)")
 
     n = index.graph.n
+    if n == 0:
+        return []
+
     if trace_decay is not None:
         seed = _build_decay_seed(n, index.mapping, trace_prefix, trace_decay)
     else:
