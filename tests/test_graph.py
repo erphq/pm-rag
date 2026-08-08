@@ -92,3 +92,20 @@ def test_zero_weight_edge_node_remains_dangling() -> None:
     p_t = g.transition_matrix_T()
     p = p_t.T
     assert pytest.approx(p[0].sum()) == 0.0
+
+
+def test_zero_node_graph_n_is_zero() -> None:
+    g = CodeGraph(nodes=[], edges=[])
+    assert g.n == 0
+
+
+def test_zero_node_graph_transition_matrix_shape() -> None:
+    g = CodeGraph(nodes=[], edges=[])
+    p_t = g.transition_matrix_T()
+    assert p_t.shape == (0, 0)
+
+
+def test_index_of_unknown_symbol_raises() -> None:
+    g = CodeGraph(nodes=["a", "b"], edges=[])
+    with pytest.raises(ValueError):
+        g.index_of("z")

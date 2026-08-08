@@ -85,3 +85,15 @@ def test_query_scores_non_increasing() -> None:
     hits = query(idx, ["payment_settled"], k=10)
     for a, b in zip(hits, hits[1:], strict=False):
         assert a.score >= b.score
+
+
+def test_query_zero_node_graph_returns_empty_list() -> None:
+    """query() on a zero-node graph must return [] rather than raising ZeroDivisionError.
+
+    Without the n==0 guard, the fallback uniform-seed branch computes 1.0/n
+    (Python integer division) which raises ZeroDivisionError when n is 0.
+    """
+    graph = CodeGraph(nodes=[], edges=[])
+    idx = build_index(graph, ["ev"])
+    hits = query(idx, ["ev"], k=5)
+    assert hits == []
