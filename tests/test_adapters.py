@@ -78,6 +78,11 @@ def test_case_order_follows_first_appearance() -> None:
     assert traces[1] == ["ev_a"]
 
 
+def test_missing_activity_col_raises_value_error() -> None:
+    with pytest.raises(ValueError, match="activity_col"):
+        traces_from_csv(_csv("case_id,event", "c1,ev"), activity_col="activity")
+
+
 def test_missing_sort_by_column_raises() -> None:
     with pytest.raises(ValueError, match="timestamp"):
         traces_from_csv(_csv("case_id,activity", "c1,ev"), sort_by="timestamp")

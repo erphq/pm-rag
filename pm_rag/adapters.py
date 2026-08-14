@@ -31,7 +31,8 @@ def traces_from_csv(
 
     Raises:
         KeyError: if ``case_col`` is absent from the CSV header.
-        ValueError: if ``sort_by`` is not ``None`` and absent from the header.
+        ValueError: if ``activity_col`` or ``sort_by`` (when not ``None``) is
+            absent from the CSV header.
     """
     if isinstance(file, (str, Path)):
         with open(file, newline="", encoding="utf-8") as fh:
@@ -50,7 +51,10 @@ def _read_csv(
     for row in reader:
         rows_by_case.setdefault(row[case_col], []).append(row)
 
-    if sort_by is not None and sort_by not in (reader.fieldnames or []):
+    fieldnames = list(reader.fieldnames or [])
+    if activity_col not in fieldnames:
+        raise ValueError(f"activity_col {activity_col!r} not found in CSV header")
+    if sort_by is not None and sort_by not in fieldnames:
         raise ValueError(f"sort_by column {sort_by!r} not found in CSV header")
 
     traces: list[list[str]] = []
