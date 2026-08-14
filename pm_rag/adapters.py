@@ -1,11 +1,4 @@
-"""Trace-log adapters: read event traces from common file formats.
-
-Currently supported:
-
-- CSV: one row per event, with a case-identifier column and an
-  activity column. Optional timestamp column controls ordering
-  within each case.
-"""
+"""Trace-log adapters: read event traces from common file formats."""
 from __future__ import annotations
 
 import csv
@@ -22,13 +15,10 @@ def traces_from_csv(
 ) -> list[list[str]]:
     """Read event traces from a CSV file.
 
-    Each unique value of ``case_col`` groups rows into one trace. Within
-    each trace, rows are sorted by ``sort_by`` (lexicographic) when that
-    column is provided; pass ``sort_by=None`` to preserve CSV row order.
-    Rows whose activity value is empty or whitespace-only are skipped.
-    Cases with no surviving activities are omitted from the result.
-
-    The returned structure is a list of traces compatible with
+    Rows are grouped by ``case_col`` into traces and sorted within each
+    trace by ``sort_by`` (lexicographic; ``None`` preserves row order).
+    Rows with an empty or whitespace-only activity value are skipped; cases
+    with no surviving activities are omitted. The result is compatible with
     ``pm_rag.eval.extract_cases``.
 
     Args:
@@ -36,16 +26,12 @@ def traces_from_csv(
         case_col: column name for the case identifier (default ``"case_id"``).
         activity_col: column name for the activity/event name
             (default ``"activity"``).
-        sort_by: column name to sort rows within each case
-            (default ``"timestamp"``). Pass ``None`` to keep CSV row order.
-
-    Returns:
-        List of traces; each trace is a list of non-empty activity strings.
+        sort_by: column to sort within each trace (default ``"timestamp"``).
+            Pass ``None`` to keep CSV row order.
 
     Raises:
         KeyError: if ``case_col`` is absent from the CSV header.
-        ValueError: if ``sort_by`` is not ``None`` and is absent from
-            the CSV header.
+        ValueError: if ``sort_by`` is not ``None`` and absent from the header.
     """
     if isinstance(file, (str, Path)):
         with open(file, newline="", encoding="utf-8") as fh:
@@ -62,25 +48,16 @@ def _read_csv(
     reader = csv.DictReader(fh)
     rows_by_case: dict[str, list[dict]] = {}
     for row in reader:
-        cid = row[case_col]
-        rows_by_case.setdefault(cid, []).append(row)
+        rows_by_case.setdefault(row[case_col], []).append(row)
 
-    if sort_by is not None:
-        fieldnames = list(reader.fieldnames or [])
-        if sort_by not in fieldnames:
-            raise ValueError(
-                f"sort_by column {sort_by!r} not found in CSV header {fieldnames}"
-            )
+    if sort_by is not None and sort_by not in (reader.fieldnames or []):
+        raise ValueError(f"sort_by column {sort_by!r} not found in CSV header")
 
     traces: list[list[str]] = []
     for rows in rows_by_case.values():
         if sort_by is not None:
             rows = sorted(rows, key=lambda r: r.get(sort_by) or "")
-        activities = [
-            act
-            for r in rows
-            if (act := str(r.get(activity_col) or "").strip())
-        ]
+        activities = [act for r in rows if (act := str(r.get(activity_col) or "").strip())]
         if activities:
             traces.append(activities)
     return traces
