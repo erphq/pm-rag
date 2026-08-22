@@ -18,6 +18,8 @@ from pm_rag.mapping import (
     compose_mappings,
     embedding_mapping,
     llm_mapping,
+    manual_mapping,
+    merge_mappings,
     regex_mapping,
 )
 
@@ -35,6 +37,8 @@ __all__ = [
     "evaluate",
     "extract_cases",
     "llm_mapping",
+    "manual_mapping",
+    "merge_mappings",
     "personalized_pagerank",
     "query",
     "regex_mapping",
