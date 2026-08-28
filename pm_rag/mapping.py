@@ -31,18 +31,31 @@ EmbedFn = Callable[[str], Sequence[float]]
 """A pluggable embedder. Takes a text, returns a numeric vector."""
 
 
-def regex_mapping(events: Iterable[str], symbols: list[str]) -> dict[str, list[int]]:
+def regex_mapping(
+    events: Iterable[str],
+    symbols: list[str],
+    *,
+    top_k: int | None = None,
+) -> dict[str, list[int]]:
     """Map each unique event name to symbol indices whose name contains
     the event string (case-insensitive substring).
 
     Args:
         events: an iterable of event names (duplicates ignored).
         symbols: the symbol list (e.g. `CodeGraph.nodes`).
+        top_k: if given, return at most this many indices per event.
+            Indices are returned in symbol-list order (ascending).
+            Must be positive if provided. Defaults to ``None`` (no cap).
 
     Returns:
         A dict from event name to a list of matching symbol indices.
         Events with no match map to an empty list.
+
+    Raises:
+        ValueError: if ``top_k`` is provided and is not positive.
     """
+    if top_k is not None and top_k <= 0:
+        raise ValueError("top_k must be positive")
     out: dict[str, list[int]] = {}
     seen: set[str] = set()
     for ev in events:
@@ -50,7 +63,8 @@ def regex_mapping(events: Iterable[str], symbols: list[str]) -> dict[str, list[i
             continue
         seen.add(ev)
         pattern = re.compile(re.escape(ev), re.IGNORECASE)
-        out[ev] = [i for i, s in enumerate(symbols) if pattern.search(s)]
+        matches = [i for i, s in enumerate(symbols) if pattern.search(s)]
+        out[ev] = matches[:top_k] if top_k is not None else matches
     return out
 
 
