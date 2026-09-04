@@ -112,6 +112,16 @@ def test_accepts_path_and_string_path() -> None:
 # error cases
 
 
+def test_list_of_lists_non_list_outer_element_raises() -> None:
+    with pytest.raises(ValueError, match="not a list"):
+        traces_from_json(_jio([["ev1"], "not_a_list"]))
+
+
+def test_records_non_dict_element_raises() -> None:
+    with pytest.raises(ValueError, match="JSON object"):
+        traces_from_json(_jio([{"case_id": "c1", "activity": "ev1"}, "oops"]))
+
+
 def test_non_list_root_raises() -> None:
     with pytest.raises(ValueError, match="root must be a list"):
         traces_from_json(_jio({"case_id": "c1"}))
