@@ -67,6 +67,17 @@ def test_ppr_1d_input_raises() -> None:
         personalized_pagerank(np.zeros(3), np.zeros(3))
 
 
+def test_ppr_max_iters_zero_returns_normalized_seed() -> None:
+    # max_iters=0 skips all iterations; the normalized seed is returned unchanged.
+    p = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 0.0, 0.0]])
+    seed = np.array([3.0, 0.0, 0.0])
+    r = personalized_pagerank(p.T, seed, alpha=0.15, max_iters=0)
+    assert pytest.approx(float(r.sum()), rel=1e-6) == 1.0
+    assert pytest.approx(float(r[0])) == 1.0
+    assert r[1] == 0.0
+    assert r[2] == 0.0
+
+
 def test_ppr_max_iters_cap_returns_normalized() -> None:
     # 4-node ring that needs many iterations to converge.
     # max_iters=1 exits before convergence but result must still be
